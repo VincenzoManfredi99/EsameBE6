@@ -6,4 +6,5 @@ import vincenzomanfredi.EsameBE6.entities.Evento;
 
 @Repository
 public interface EventoRepository extends JpaRepository<Evento, Long> {
+    
 }

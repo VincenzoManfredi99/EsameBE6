@@ -1,51 +1,83 @@
 package vincenzomanfredi.EsameBE6.services;
 
-import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import vincenzomanfredi.EsameBE6.entities.Ruolo;
 import vincenzomanfredi.EsameBE6.entities.Utente;
+import vincenzomanfredi.EsameBE6.exceptions.BadRequestException;
+import vincenzomanfredi.EsameBE6.exceptions.NotFoundException;
 import vincenzomanfredi.EsameBE6.payloads.UtenteDTO;
 import vincenzomanfredi.EsameBE6.repositories.UtenteRepository;
 
+@Service
+@Slf4j
 public class UtenteService {
+    private final UtenteRepository utenteRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UtenteRepository utenteRepository;
+    public UtenteService(UtenteRepository utenteRepository, PasswordEncoder passwordEncoder) {
+        this.utenteRepository = utenteRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-    @Autowired
-    private PasswordEncoder passwordEncoder; // Ci serve per hashare la password in registrazione
-
-    // 1. Metodo per salvare un nuovo utente (Registrazione)
-    public Utente save(UtenteDTO body) {
-        // Controlliamo se l'email è già in uso
-        if (utenteRepository.existsByEmail(body.email())) {
-            throw new BadRequestException("L'email " + body.email() + " è già in uso!");
+    //SAVE
+    public Utente save(UtenteDTO payload) {
+        if (this.utenteRepository.existsByEmail(payload.email())) {
+            throw new BadRequestException("L'indirizzo email " + payload.email() + " è già utilizzato!");
         }
 
-        // Convertiamo la stringa del ruolo del DTO nel nostro Enum Ruolo
         Ruolo ruoloScelto;
         try {
-            ruoloScelto = Ruolo.valueOf(body.ruolo().toUpperCase());
+            ruoloScelto = Ruolo.valueOf(payload.ruolo().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("Ruolo non valido! Scegli tra UTENTE_NORMALE o ORGANIZZATORE_EVENTI.");
         }
 
-        // Creiamo la nuova entità Utente cifrando la password prima del salvataggio
-        Utente nuovoUtente = new Utente(
-                body.nome(),
-                body.cognome(),
-                body.email(),
-                passwordEncoder.encode(body.password()), // Hashing della password
+        Utente newUser = new Utente(
+                payload.nome(),
+                payload.cognome(),
+                payload.email(),
+                passwordEncoder.encode(payload.password()),
                 ruoloScelto
         );
 
-        return utenteRepository.save(nuovoUtente);
+        Utente savedUser = this.utenteRepository.save(newUser);
+
+        log.info("Utente " + savedUser.getId() + " salvato");
+
+        return savedUser;
     }
 
-    // 2. Metodo di ricerca per ID (quello fondamentale che servirà al TokenFilter!)
-    public Utente findById(long id) {
-        return utenteRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Utente con ID " + id + " non trovato!"));
+    //GET ALL
+    public Page<Utente> getAll(int page, int size, String orderBy) {
+        if (size > 50) size = 50;
+        if (size < 0) size = 10;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+        return this.utenteRepository.findAll(pageable);
     }
+
+    //FIND BY ID
+    public Utente findById(long utenteId) {
+        return this.utenteRepository.findById(utenteId)
+                .orElseThrow(() -> new NotFoundException("L'utente con ID " + utenteId + " non è stato trovato!"));
+    }
+
+    //DELETE
+    public void findByIdAndDelete(long utenteId) {
+        Utente found = this.findById(utenteId);
+        this.utenteRepository.delete(found);
+    }
+
+    //FIND BY EMAIL
+    public Utente findByEmail(String email) {
+        return this.utenteRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("L'utente con email " + email + " non è stato trovato!"));
+    }
+
 }
