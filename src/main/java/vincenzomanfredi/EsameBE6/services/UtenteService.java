@@ -42,8 +42,7 @@ public class UtenteService {
                 payload.nome(),
                 payload.cognome(),
                 payload.email(),
-                passwordEncoder.encode(payload.password()),
-                ruoloScelto
+                passwordEncoder.encode(payload.password())
         );
 
         Utente savedUser = this.utenteRepository.save(newUser);
