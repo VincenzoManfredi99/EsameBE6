@@ -1,6 +1,10 @@
 package vincenzomanfredi.EsameBE6.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import vincenzomanfredi.EsameBE6.entities.Evento;
 import vincenzomanfredi.EsameBE6.entities.Prenotazione;
@@ -22,7 +26,6 @@ public class PrenotazioneService {
     private final EventoRepository eventoRepository;
     private final UtenteService utenteService;
 
-    // Costruttore per la Dependency Injection
     public PrenotazioneService(PrenotazioneRepository prenotazioneRepository,
                                EventoService eventoService,
                                EventoRepository eventoRepository,
@@ -51,6 +54,21 @@ public class PrenotazioneService {
         log.info("Prenotazione ID " + savedPrenotazione.getId() + " creata per l'utente " + utente.getNome() + " all'evento " + evento.getTitolo());
 
         return savedPrenotazione;
+    }
+
+    // GET ALL
+    public Page<Prenotazione> getAll(int page, int size, String orderBy) {
+        if (size > 50) size = 50;
+        if (size < 0) size = 10;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+        return this.prenotazioneRepository.findAll(pageable);
+    }
+
+    // FIND BY ID
+    public Prenotazione findById(long prenotazioneId) {
+        return this.prenotazioneRepository.findById(prenotazioneId)
+                .orElseThrow(() -> new NotFoundException("La prenotazione con ID " + prenotazioneId + " non è stata trovata!"));
     }
 
     //Delete
