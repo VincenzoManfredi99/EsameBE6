@@ -11,7 +11,9 @@ import vincenzomanfredi.EsameBE6.entities.Ruolo;
 import vincenzomanfredi.EsameBE6.entities.Utente;
 import vincenzomanfredi.EsameBE6.exceptions.BadRequestException;
 import vincenzomanfredi.EsameBE6.exceptions.NotFoundException;
+import vincenzomanfredi.EsameBE6.payloads.PasswordChangeDTO;
 import vincenzomanfredi.EsameBE6.payloads.UtenteDTO;
+import vincenzomanfredi.EsameBE6.payloads.UtenteUpdateDTO;
 import vincenzomanfredi.EsameBE6.repositories.UtenteRepository;
 
 @Service
@@ -45,6 +47,7 @@ public class UtenteService {
                 passwordEncoder.encode(payload.password())
         );
 
+        newUser.setRuolo(ruoloScelto);
         Utente savedUser = this.utenteRepository.save(newUser);
 
         log.info("Utente " + savedUser.getId() + " salvato");
@@ -77,6 +80,35 @@ public class UtenteService {
     public Utente findByEmail(String email) {
         return this.utenteRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("L'utente con email " + email + " non è stato trovato!"));
+    }
+
+    //UPDATE
+    public Utente findByIdAndUpdate(long id, UtenteUpdateDTO body) {
+        Utente found = this.findById(id);
+
+        if (!found.getEmail().equals(body.email())) {
+            if (this.utenteRepository.existsByEmail(body.email())) {
+                throw new BadRequestException("L'email " + body.email() + " è già in uso!");
+            }
+        }
+
+        found.setNome(body.nome());
+        found.setCognome(body.cognome());
+        found.setEmail(body.email());
+
+        return this.utenteRepository.save(found);
+    }
+
+    //UPDATE PASSWORD
+    public void updatePassword(long utenteId, PasswordChangeDTO payload) {
+        Utente found = this.findById(utenteId);
+
+        if (!found.getPassword().equals(payload.oldPassword()))
+            throw new BadRequestException("Le password non corrispondono!");
+
+        found.setPassword(payload.newPassword());
+
+        this.utenteRepository.save(found);
     }
 
 }
