@@ -10,7 +10,7 @@ import vincenzomanfredi.EsameBE6.payloads.UtenteDTO;
 import vincenzomanfredi.EsameBE6.payloads.UtenteLoginDTO;
 import vincenzomanfredi.EsameBE6.payloads.UtenteLoginResponseDTO;
 import vincenzomanfredi.EsameBE6.payloads.UtenteResponseDTO;
-import vincenzomanfredi.EsameBE6.security.AuthService;
+import vincenzomanfredi.EsameBE6.services.AuthService;
 import vincenzomanfredi.EsameBE6.services.UtenteService;
 
 import java.util.List;

@@ -20,11 +20,11 @@ import vincenzomanfredi.EsameBE6.repositories.UtenteRepository;
 @Slf4j
 public class UtenteService {
     private final UtenteRepository utenteRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder bcrypt;
 
-    public UtenteService(UtenteRepository utenteRepository, PasswordEncoder passwordEncoder) {
+    public UtenteService(UtenteRepository utenteRepository, PasswordEncoder bcrypt) {
         this.utenteRepository = utenteRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.bcrypt = bcrypt;
     }
 
     //SAVE
@@ -37,14 +37,14 @@ public class UtenteService {
         try {
             ruoloScelto = Ruolo.valueOf(payload.ruolo().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Ruolo non valido! Scegli tra UTENTE_NORMALE o ORGANIZZATORE_EVENTI.");
+            throw new BadRequestException("Ruolo non valido! Scegli tra UTENTE o ORGANIZZATORE.");
         }
 
         Utente newUser = new Utente(
                 payload.nome(),
                 payload.cognome(),
                 payload.email(),
-                passwordEncoder.encode(payload.password())
+                this.bcrypt.encode(payload.password())
         );
 
         newUser.setRuolo(ruoloScelto);
@@ -110,5 +110,4 @@ public class UtenteService {
 
         this.utenteRepository.save(found);
     }
-
 }

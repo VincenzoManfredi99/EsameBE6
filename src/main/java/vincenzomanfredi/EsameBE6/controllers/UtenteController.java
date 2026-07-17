@@ -21,7 +21,7 @@ public class UtenteController {
 
     //GET
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ORGANIZZATORE')")
     public Page<Utente> getUsers(@RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "10") int size,
                                  @RequestParam(defaultValue = "cognome") String orderBy) {
@@ -52,21 +52,21 @@ public class UtenteController {
 
     //GET
     @GetMapping("/{userId}")
-    @PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ORGANIZZATORE')")
     public Utente getById(@PathVariable long userId) {
         return this.usersService.findById(userId);
     }
 
     // PUT
     @PutMapping("/{userId}")
-    @PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ORGANIZZATORE')")
     public Utente getByIdAndUpdate(@PathVariable long userId, @RequestBody UtenteUpdateDTO body) {
         return this.usersService.findByIdAndUpdate(userId, body);
     }
 
     // DELETE
     @DeleteMapping("/{userId}")
-    @PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ORGANIZZATORE')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void getByIdAndDelete(@PathVariable long userId) {
         this.usersService.findByIdAndDelete(userId);

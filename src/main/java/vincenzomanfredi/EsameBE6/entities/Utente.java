@@ -1,6 +1,7 @@
 package vincenzomanfredi.EsameBE6.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,6 +17,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @ToString
+@JsonIgnoreProperties({"password", "credentialsNonExpired", "enabled", "accountNonExpired", "authorities", "accountNonLocked"})
 public class Utente implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,20 +45,36 @@ public class Utente implements UserDetails {
         this.cognome = cognome;
         this.email = email;
         this.password = password;
-        this.ruolo = Ruolo.UTENTE;
+        this.ruolo = ruolo;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Il metodo mi impone di restituire una Collection di Authorities cioè di RUOLI (al plurale perché in altre applicazioni
-        // potrebbe anche succedere che un utente abbia più di un ruolo)
-        // SimpleGrantedAuthority è una classe che implementa GrantedAuthority, cioè l'interfaccia "ufficiale" per i ruoli in Spring Security
-        // a noi quindi basta passare il nostro enum al suo costruttore e metterlo nella lista
         return List.of(new SimpleGrantedAuthority(this.ruolo.name()));
     }
 
     @Override
     public String getUsername() {
         return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
